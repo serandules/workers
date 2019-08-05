@@ -1,0 +1,19 @@
+{
+  "name": "workers",
+  "description": "workers",
+  "version": "0.0.0",
+  "author": {
+    "name": "serandives",
+    "email": "serandives@gmail.com"
+  },
+  "dependencies": {
+    "request": "2.81.0",
+    "async": "2.6.0",
+    "logger": "serandules/logger#master",
+    "utils": "serandules/utils#master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/serandules/workers.git"
+  }
+}
