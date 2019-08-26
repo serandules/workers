@@ -1,7 +1,8 @@
 var log = require('logger')('workers');
 var nconf = require('nconf').use('memory').argv().env();
+var _ = require('lodash');
 var fs = require('fs');
-var path = require('path');
+var async = require('async');
 var childProcess = require('child_process');
 
 var utils = require('utils');
@@ -10,25 +11,12 @@ var env = utils.env();
 
 nconf.defaults(require('./env/' + env + '.json'));
 
-var findConcurrency = function (event, processor) {
-  var concurrency = nconf.get('CONCURRENCY_' + event + '_' + processor);
-  if (concurrency) {
-    return parseInt(concurrency, 10);
-  }
-  concurrency = nconf.get('CONCURRENCY_' + event);
-  if (concurrency) {
-    return parseInt(concurrency, 10);
-  }
-  return 1;
-};
-
-var spawn = function (event, processor, concurrency) {
+var spawn = function (event, processorsPerFork, done) {
+  var workerEnv = _.clone(nconf.get());
+  workerEnv.EVENT = event;
+  workerEnv.CONCURRENT_PROCESSORS = processorsPerFork;
   var worker = childProcess.fork('worker.js', process.argv.slice(2), {
-    env: {
-      EVENT: event,
-      PROCESSOR: processor,
-      CONCURRENCY: concurrency
-    }
+    env: workerEnv
   });
   worker.on('error', function (err) {
     log.error('worker:errored', err);
@@ -36,10 +24,15 @@ var spawn = function (event, processor, concurrency) {
   worker.on('exit', function (code, signal) {
     log.error('worker:exit', 'code:%s, signal:%s', code, signal);
     setTimeout(function () {
-      spawn(event, processor, concurrency);
+      spawn(event, processorsPerFork, done);
     }, 5000);
   });
-  log.info('worker:queued', 'event:%s processor:%s concurrency:%s', event, processor, concurrency);
+  log.info('worker:queued', 'event:%s processorsPerFork:%s', event, processorsPerFork);
+  done();
+};
+
+var findEnv = function (prefix, name) {
+  return parseInt(nconf.get(prefix + name.toUpperCase().replace(/-/g, '_')) || '1', 10);
 };
 
 var initialize = function (done) {
@@ -47,17 +40,13 @@ var initialize = function (done) {
     if (err) {
       return done(err);
     }
-    events.forEach(function (event) {
-      var processor = path.join(__dirname, 'events', event);
-      fs.readdir(processor, function (err, processors) {
-        if (err) {
-          return done(err);
-        }
-        processors.forEach(function (processor) {
-          spawn(event, processor, findConcurrency(event, processor));
-        });
-      });
-    });
+    async.each(events, function (event, eachDone) {
+      var forksPerQueue = findEnv('EVENT_CONCURRENCY_', event);
+      var processorsPerFork = findEnv('FORK_CONCURRENCY_', event);
+      async.times(forksPerQueue, function (n, timesDone) {
+        spawn(event, processorsPerFork, timesDone);
+      }, eachDone);
+    }, done);
   });
 };
 
