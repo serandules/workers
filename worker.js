@@ -59,7 +59,7 @@ db.once('open', function () {
 
       async.times(concurrentProcessors, function (n, queueDone) {
         sqs.getQueueUrl({
-          QueueName: event + '.fifo'
+          QueueName: utils.queue(event) + '.fifo'
         }, function (err, o) {
           if (err) {
             return queueDone(err);
