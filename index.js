@@ -2,6 +2,7 @@ var log = require('logger')('workers');
 var nconf = require('nconf').use('memory').argv().env();
 var _ = require('lodash');
 var fs = require('fs');
+var express = require('express');
 var async = require('async');
 var childProcess = require('child_process');
 
@@ -10,6 +11,8 @@ var utils = require('utils');
 var env = utils.env();
 
 nconf.defaults(require('./env/' + env + '.json'));
+
+var port = nconf.get('PORT');
 
 var spawn = function (event, processorsPerFork, done) {
   var workerEnv = _.clone(nconf.get());
@@ -36,17 +39,31 @@ var findEnv = function (prefix, name) {
 };
 
 var initialize = function (done) {
-  fs.readdir('events', function (err, events) {
+
+  var apps = express();
+
+  apps.get('/status', function (req, res) {
+    res.json({
+      status: 'healthy'
+    });
+  });
+
+  apps.listen(port, function (err) {
     if (err) {
       return done(err);
     }
-    async.each(events, function (event, eachDone) {
-      var forksPerQueue = findEnv('EVENT_CONCURRENCY_', event);
-      var processorsPerFork = findEnv('FORK_CONCURRENCY_', event);
-      async.times(forksPerQueue, function (n, timesDone) {
-        spawn(event, processorsPerFork, timesDone);
-      }, eachDone);
-    }, done);
+    fs.readdir('events', function (err, events) {
+      if (err) {
+        return done(err);
+      }
+      async.each(events, function (event, eachDone) {
+        var forksPerQueue = findEnv('EVENT_CONCURRENCY_', event);
+        var processorsPerFork = findEnv('FORK_CONCURRENCY_', event);
+        async.times(forksPerQueue, function (n, timesDone) {
+          spawn(event, processorsPerFork, timesDone);
+        }, eachDone);
+      }, done);
+    });
   });
 };
 
@@ -54,4 +71,5 @@ initialize(function (err) {
   if (err) {
     return log.error(err);
   }
+  log.info('server:started', 'port:%s', port);
 });
