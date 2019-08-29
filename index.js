@@ -2,6 +2,8 @@ var log = require('logger')('workers');
 var nconf = require('nconf').use('memory').argv().env();
 var _ = require('lodash');
 var fs = require('fs');
+var util = require('util');
+var shell = require('shelljs');
 var express = require('express');
 var async = require('async');
 var childProcess = require('child_process');
@@ -69,14 +71,10 @@ var initialize = function (done) {
   });
 };
 
-var modules = commons.models();
+var models = commons.models();
 
 exports.install = function (done) {
-  var services = !!nconf.get('SERVICES');
-  if (!services) {
-    return done();
-  }
-  async.eachLimit(modules, 1, function (module, installed) {
+  async.eachLimit(models, 1, function (module, installed) {
     var cmd = 'export GITHUB_USERNAME=%s; export GITHUB_PASSWORD=%s; npm install serandules/%s#%s';
     cmd = util.format(cmd, nconf.get('GITHUB_USERNAME'), nconf.get('GITHUB_PASSWORD'), module.name, module.version);
     shell.exec(cmd, function (err) {

@@ -27,8 +27,8 @@ exports.models = function () {
   return o;
 };
 
-exports.load = function (modules) {
-  modules.forEach(function (module) {
+exports.load = function (models) {
+  models.forEach(function (module) {
     log.info('module:load', 'name:%s', module.name);
     require(module.name);
   });
