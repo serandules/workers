@@ -2,22 +2,18 @@ var log = require('logger')('events:model-update:location-tags');
 var _ = require('lodash');
 var async = require('async');
 
+var mongoose = require('mongoose');
+
 var utils = require('utils');
 
 var Locations = require('model-locations');
-var Vehicles = require('model-vehicles');
 
 var values = require('validators').values;
-
-var models = {
-  locations: Locations,
-  vehicles: Vehicles
-};
 
 exports.timeout = 60000;
 
 var findModel = function (model, done) {
-  return done(null, models[model]);
+  return done(null, mongoose.model(model));
 };
 
 var findObject = function (model, id, done) {

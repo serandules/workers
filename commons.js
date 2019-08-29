@@ -1,3 +1,6 @@
+var log = require('logger')('commons');
+var nconf = require('nconf');
+
 exports.models = function () {
   var key;
   var name;
@@ -26,6 +29,7 @@ exports.models = function () {
 
 exports.load = function (modules) {
   modules.forEach(function (module) {
+    log.info('module:load', 'name:%s', module.name);
     require(module.name);
   });
 };
