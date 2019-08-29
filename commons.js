@@ -1,4 +1,4 @@
-var log = require('logger')('commons');
+var log = require('logger')('workers:commons');
 var nconf = require('nconf');
 
 exports.models = function () {
