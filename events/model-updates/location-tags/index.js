@@ -54,6 +54,9 @@ var process = function (data, model, o, done) {
     if (err) {
       return done(err);
     }
+    if (!o) {
+      return done();
+    }
     values.tags(fields)({
       data: utils.json(o)
     }, function (err, tags) {
