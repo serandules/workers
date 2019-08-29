@@ -14,6 +14,18 @@
     "express": "4.*",
     "logger": "serandules/logger#master",
     "utils": "serandules/utils#master",
+    "model-binaries": "serandules/model-binaries#master",
+    "model-clients": "serandules/model-clients#master",
+    "model-configs": "serandules/model-configs#master",
+    "model-contacts": "serandules/model-contacts#master",
+    "model-groups": "serandules/model-groups#master",
+    "model-locations": "serandules/model-locations#master",
+    "model-otps": "serandules/model-otps#master",
+    "model-tiers": "serandules/model-tiers#master",
+    "model-tokens": "serandules/model-tokens#master",
+    "model-users": "serandules/model-users#master",
+    "model-vehicles-makes": "serandules/model-vehicles-makes#master",
+    "model-vehicles-models": "serandules/model-vehicles-models#master",
     "model-vehicles": "serandules/model-vehicles#master"
   },
   "repository": {

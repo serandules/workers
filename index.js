@@ -12,6 +12,8 @@ var env = utils.env();
 
 nconf.defaults(require('./env/' + env + '.json'));
 
+var commons = require('./commons');
+
 var port = nconf.get('PORT');
 
 var spawn = function (event, processorsPerFork, done) {
@@ -67,9 +69,32 @@ var initialize = function (done) {
   });
 };
 
-initialize(function (err) {
-  if (err) {
-    return log.error(err);
+var modules = commons.models();
+
+exports.install = function (done) {
+  var services = !!nconf.get('SERVICES');
+  if (!services) {
+    return done();
   }
-  log.info('server:started', 'port:%s', port);
-});
+  async.eachLimit(modules, 1, function (module, installed) {
+    var cmd = 'export GITHUB_USERNAME=%s; export GITHUB_PASSWORD=%s; npm install serandules/%s#%s';
+    cmd = util.format(cmd, nconf.get('GITHUB_USERNAME'), nconf.get('GITHUB_PASSWORD'), module.name, module.version);
+    shell.exec(cmd, function (err) {
+      if (err) {
+        return installed(err);
+      }
+      log.info('modules:installed', 'name:%s version:%s', module.version, module.name);
+      installed();
+    });
+  }, done);
+};
+
+exports.start = function (done) {
+  initialize(function (err) {
+    if (err) {
+      return done(err);
+    }
+    log.info('workers:started', 'port:%s', port);
+    done();
+  });
+};

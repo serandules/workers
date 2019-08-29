@@ -10,6 +10,8 @@ var env = utils.env();
 
 nconf.defaults(require('./env/' + env + '.json'));
 
+var commons = require('./commons');
+
 var sqs = utils.sqs();
 
 var event = nconf.get('EVENT');
@@ -18,6 +20,8 @@ var concurrentProcessors = parseInt(nconf.get('CONCURRENT_PROCESSORS'), 10);
 var mongourl = nconf.get('MONGODB_URI');
 
 var ssl = !!nconf.get('MONGODB_SSL');
+
+var models = commons.models();
 
 mongoose.connect(mongourl, {
   authSource: 'admin',
@@ -32,6 +36,9 @@ db.on('error', function (err) {
 
 db.once('open', function () {
   log.info('db:opened');
+
+  commons.load(models);
+
   fs.readdir(path.join('events', event), function (err, processors) {
     if (err) {
       return log.error('processors:errored', err);
