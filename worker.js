@@ -60,7 +60,7 @@ db.once('open', function () {
 
     var TIMEOUT_THRESHOLD = visibilityTimeout - 5000;
 
-    visibilityTimeout = Math.floor(visibilityTimeout / 60000);
+    visibilityTimeout = Math.floor(visibilityTimeout / 1000);
 
     async.each(processors, function (processor, eachDone) {
 

@@ -13,7 +13,11 @@ var values = require('validators').values;
 exports.timeout = 60000;
 
 var findModel = function (model, done) {
-  return done(null, mongoose.model(model));
+  try {
+    return done(null, mongoose.model(model));
+  } catch (e) {
+    done();
+  }
 };
 
 var findObject = function (model, id, done) {
