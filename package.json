@@ -14,7 +14,9 @@
     "express": "4.*",
     "shelljs": "0.7.7",
     "logger": "serandules/logger#master",
-    "utils": "serandules/utils#master"
+    "utils": "serandules/utils#master",
+    "model-configs": "serandules/model-configs#master",
+    "vutils": "serandules/vutils#master"
   },
   "repository": {
     "type": "git",

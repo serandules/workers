@@ -1,4 +1,6 @@
 {
+  "DOMAIN": "serandives.com",
+  "SUBDOMAIN": "development.{subdomain}",
   "EVENT_CONCURRENCY_MODEL_UPDATES": 1,
   "FORK_CONCURRENCY_MODEL_UPDATES": 1,
   "MODEL_BINARIES": "master",
