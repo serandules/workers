@@ -58,7 +58,7 @@ var process = function (data, model, o, done) {
       return done();
     }
     values.tags(fields)({
-      data: utils.json(o)
+      data: o
     }, function (err, tags) {
       if (err) {
         return done(err);
@@ -102,8 +102,97 @@ var process = function (data, model, o, done) {
   });
 };
 
+var locationUpdated = function (data, done) {
+  var models = ['vehicles'];
+  var pending = [];
+  async.eachLimit(models, 10, function (name, eachDone) {
+    findModel(name, function (err, model) {
+      if (err) {
+        return eachDone(err);
+      }
+      if (!model) {
+        log.error('model:not-found', 'model:%s', data.model);
+        return eachDone();
+      }
+      var fields = findFields(model);
+      var or = [];
+      fields.forEach(function (field) {
+        var q = {};
+        q[field] = data.id;
+        or.push(q);
+      });
+      var select = fields.join(' ');
+      model.find({
+        $or: or
+      }).select(select).exec(function (err, modelz) {
+        if (err) {
+          return eachDone(err);
+        }
+        if (!modelz.length) {
+          return eachDone();
+        }
+        modelz.forEach(function (o) {
+          o = utils.json(o);
+          var updated = {};
+          var affected = false;
+          fields.forEach(function (field) {
+            if (o[field] === data.id) {
+              updated[field] = data.id;
+              affected = true;
+            }
+          });
+          if (!affected) {
+            return;
+          }
+          pending.push({
+            model: model,
+            id: o.id,
+            updated: updated
+          });
+        });
+        eachDone();
+      });
+    });
+  }, function (err) {
+    if (err) {
+      return done(err);
+    }
+    async.eachLimit(pending, 10, function (entry, eachDone) {
+      modelUpdated(entry.model, {
+        id: entry.id,
+        action: 'update',
+        updated: entry.updated
+      }, eachDone);
+    }, done);
+  });
+};
+
+var modelUpdated = function (model, data, done) {
+  var fields = findFields(model);
+  var updated = data.updated;
+  var o = [];
+  fields.forEach(function (field) {
+    if (!updated[field]) {
+      return;
+    }
+    o.push({
+      field: field,
+      value: updated[field]
+    });
+  });
+  if (!o.length) {
+    return done();
+  }
+  process(data, model, o, function (err) {
+    done(err);
+  });
+};
+
 exports.handle = function (ctx, done) {
   var data = ctx.data;
+  if (data.model === 'locations') {
+    return locationUpdated(data, done);
+  }
   findModel(data.model, function (err, model) {
     if (err) {
       return done(err);
@@ -112,23 +201,6 @@ exports.handle = function (ctx, done) {
       log.error('model:not-found', 'model:%s', data.model);
       return done();
     }
-    var fields = findFields(model);
-    var updated = data.updated;
-    var o = [];
-    fields.forEach(function (field) {
-      if (!updated[field]) {
-        return;
-      }
-      o.push({
-        field: field,
-        value: updated[field]
-      });
-    });
-    if (!o.length) {
-      return done();
-    }
-    process(data, model, o, function (err) {
-      done(err);
-    });
+    modelUpdated(model, data, done);
   });
 };
