@@ -64,7 +64,7 @@ var process = function (data, model, o, done) {
         return done(err);
       }
       var pull = [];
-      var tagsOld = o.tags;
+      var tagsOld = o.tags || [];
       var fieldNames = Object.keys(fields);
       var numUpdatedFields = fieldNames.length;
       tagsOld.forEach(function (tag) {
