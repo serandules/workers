@@ -82,7 +82,8 @@ db.once('open', function () {
               WaitTimeSeconds: 0
             }, function (err, oo) {
               if (err) {
-                return utils.delayed(5000, whilstDone, err);
+                log.error('receive:errored', 'message:%s', err.message, err);
+                return utils.delayed(5000, whilstDone);
               }
               if (!Array.isArray(oo.Messages)) {
                 return utils.delayed(5000, whilstDone);
@@ -112,7 +113,13 @@ db.once('open', function () {
                   sqs.deleteMessage({
                     QueueUrl: o.QueueUrl,
                     ReceiptHandle: message.ReceiptHandle
-                  }, processed);
+                  }, function (err) {
+                    if (err) {
+                      log.error('delete:errored', 'message:%s', err.message, err);
+                      return utils.delayed(5000, processed);
+                    }
+                    processed();
+                  });
                 });
               }, whilstDone);
             });
