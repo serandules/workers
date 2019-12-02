@@ -103,7 +103,7 @@ var process = function (data, model, o, done) {
 };
 
 var locationUpdated = function (data, done) {
-  var models = ['vehicles'];
+  var models = ['vehicles', 'realestates'];
   var pending = [];
   async.eachLimit(models, 10, function (name, eachDone) {
     findModel(name, function (err, model) {
