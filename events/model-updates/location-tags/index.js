@@ -4,11 +4,10 @@ var async = require('async');
 
 var mongoose = require('mongoose');
 
-var utils = require('utils');
-
-var Locations = require('model-locations');
-
-var values = require('validators').values;
+var sera = require('sera');
+var utils = sera.utils;
+var validators = sera.validators;
+var values = validators.values;
 
 exports.timeout = 60000;
 
@@ -48,7 +47,7 @@ var findFields = function (model) {
 var process = function (data, model, o, done) {
   var fields = {};
   o.forEach(function (oo) {
-    fields[oo.field] = Locations.tagger.value;
+    fields[oo.field] = sera.model('locations').tagger.value;
   });
   findObject(model, data.id, function (err, o) {
     if (err) {

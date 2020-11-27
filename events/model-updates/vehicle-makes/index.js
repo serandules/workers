@@ -1,8 +1,8 @@
 var log = require('logger')('events:model-update:vehicle-makes');
 
-var utils = require('utils');
-var Configs = require('model-configs');
-var vutils = require('vehicle-utils');
+var sera = require('sera');
+var utils = sera.utils;
+var vehicleUtils = require('vehicle-utils');
 
 exports.timeout = 60000;
 
@@ -14,13 +14,13 @@ exports.handle = function (ctx, done) {
   }
   var action = data.action;
   if (action === 'remove') {
-    return utils.cache('configs:' + config.name, null, done);
+    return utils.cache('configs:' + data.name, null, done);
   }
   if (['create', 'update', 'remove'].indexOf(action) === -1) {
     return done();
   }
-  vutils.allMakes(function (err, makes) {
-    Configs.findOneAndUpdate({name: 'vehicle-makes'}, {
+  vehicleUtils.allMakes(function (err, makes) {
+    sera.model('configs').findOneAndUpdate({name: 'vehicle-makes'}, {
       value: JSON.stringify(makes)
     }, {new: true}, function (err, config) {
       if (err) {

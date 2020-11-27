@@ -3,20 +3,5 @@
   "SUBDOMAIN": "{subdomain}.development",
   "EVENT_CONCURRENCY_MODEL_UPDATES": 1,
   "FORK_CONCURRENCY_MODEL_UPDATES": 1,
-  "MODEL_BINARIES": "master",
-  "MODEL_CLIENTS": "master",
-  "MODEL_CONFIGS": "master",
-  "MODEL_CONTACTS": "master",
-  "MODEL_GROUPS": "master",
-  "MODEL_LOCATIONS": "master",
-  "MODEL_OTPS": "master",
-  "MODEL_TIERS": "master",
-  "MODEL_TOKENS": "master",
-  "MODEL_USERS": "master",
-  "MODEL_VEHICLE_MAKES": "master",
-  "MODEL_VEHICLE_MODELS": "master",
-  "MODEL_VEHICLES": "master",
-  "MODEL_REALESTATES": "master",
-  "MODEL_WORKFLOWS": "master",
-  "MODEL_GRANTS": "master"
+  "SQS_QUEUE_MODEL_UPDATES": "model-updates-development"
 }

@@ -1,7 +1,7 @@
 var log = require('logger')('events:model-update:vehicle-makes');
 
-var utils = require('utils');
-var Configs = require('model-configs');
+var sera = require('sera');
+var utils = sera.utils;
 
 exports.timeout = 60000;
 
@@ -13,19 +13,19 @@ exports.handle = function (ctx, done) {
   }
   var action = data.action;
   if (action === 'remove') {
-    return utils.cache('configs:' + config.name, null, done);
+    return sera.cache('configs:' + data.name, null, done);
   }
   if (action !== 'create' && action !== 'update') {
     return done();
   }
-  Configs.findOne({_id: data.id}, function (err, config) {
+  sera.model('configs').findOne({_id: data.id}, function (err, config) {
     if (err) {
       return done(err);
     }
     if (!config) {
       return done();
     }
-    config = utils.json(config);
+    config = sera.json(config);
     utils.group('public', function (err, pub) {
       if (err) {
         return done(err);
@@ -34,7 +34,7 @@ exports.handle = function (ctx, done) {
         if (err) {
           return done(err);
         }
-        var permitted = utils.permitted({groups: [pub.id, anon.id]}, config, 'read');
+        var permitted = sera.permitted({groups: [pub.id, anon.id]}, config, 'read');
         if (!permitted) {
           return done();
         }

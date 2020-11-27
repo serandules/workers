@@ -2,19 +2,13 @@ var log = require('logger')('workers');
 var nconf = require('nconf').use('memory').argv().env();
 var _ = require('lodash');
 var fs = require('fs');
-var util = require('util');
-var shell = require('shelljs');
 var express = require('express');
 var async = require('async');
 var childProcess = require('child_process');
 
-var utils = require('utils');
-
-var env = utils.env();
+var env = nconf.get('ENV');
 
 nconf.defaults(require('./env/' + env + '.json'));
-
-var commons = require('./commons');
 
 var port = nconf.get('PORT');
 
@@ -22,7 +16,7 @@ var spawn = function (event, processorsPerFork, done) {
   var workerEnv = _.clone(nconf.get());
   workerEnv.EVENT = event;
   workerEnv.CONCURRENT_PROCESSORS = processorsPerFork;
-  var worker = childProcess.fork('worker.js', process.argv.slice(2), {
+  var worker = childProcess.fork('worker/index.js', process.argv.slice(2), {
     env: workerEnv
   });
   worker.on('error', function (err) {
@@ -69,22 +63,6 @@ var initialize = function (done) {
       }, done);
     });
   });
-};
-
-var models = commons.models();
-
-exports.install = function (done) {
-  async.eachLimit(models, 1, function (module, installed) {
-    var cmd = 'export GITHUB_USERNAME=%s; export GITHUB_PASSWORD=%s; npm install serandules/%s#%s';
-    cmd = util.format(cmd, nconf.get('GITHUB_USERNAME'), nconf.get('GITHUB_PASSWORD'), module.name, module.version);
-    shell.exec(cmd, function (err) {
-      if (err) {
-        return installed(err);
-      }
-      log.info('modules:installed', 'name:%s version:%s', module.version, module.name);
-      installed();
-    });
-  }, done);
 };
 
 exports.start = function (done) {
