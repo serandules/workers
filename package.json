@@ -16,7 +16,9 @@
     "logger": "serandules/logger#master",
     "utils": "serandules/utils#master",
     "model-configs": "serandules/model-configs#master",
-    "vehicle-utils": "serandules/vehicle-utils#master"
+    "vehicle-utils": "serandules/vehicle-utils#master",
+    "sera": "serandules/sera#master",
+    "serandives": "serandules/serandives#master"
   },
   "repository": {
     "type": "git",
