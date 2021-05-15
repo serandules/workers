@@ -1,4 +1,4 @@
-var log = require('logger')('events:model-update:vehicle-makes');
+var log = require('logger')('events:model-updates:configs-cache');
 
 var sera = require('sera');
 var utils = sera.utils;

@@ -1,8 +1,6 @@
-var log = require('logger')('events:model-update:location-tags');
+var log = require('logger')('events:model-updates:location-tags');
 var _ = require('lodash');
 var async = require('async');
-
-var mongoose = require('mongoose');
 
 var sera = require('sera');
 var utils = sera.utils;
@@ -13,7 +11,7 @@ exports.timeout = 60000;
 
 var findModel = function (model, done) {
   try {
-    return done(null, mongoose.model(model));
+    return done(null, sera.model(model));
   } catch (e) {
     done();
   }
@@ -28,7 +26,7 @@ var findObject = function (model, id, done) {
   });
 };
 
-var findFields = function (model) {
+var findLocationFields = function (model) {
   var schema = model.schema;
   var paths = schema.paths;
   var locations = [];
@@ -46,8 +44,9 @@ var findFields = function (model) {
 
 var process = function (data, model, o, done) {
   var fields = {};
+  var tagger = sera.model('locations').tagger;
   o.forEach(function (oo) {
-    fields[oo.field] = sera.model('locations').tagger.value;
+    fields[oo.field] = tagger;
   });
   findObject(model, data.id, function (err, o) {
     if (err) {
@@ -56,36 +55,32 @@ var process = function (data, model, o, done) {
     if (!o) {
       return done();
     }
-    values.tags(fields)({
+    values.tags({server: fields})({
       data: o
     }, function (err, tags) {
       if (err) {
         return done(err);
       }
+      var toKey = function (tag) {
+        return tag.group + ':' + tag.name;
+      }
       var pull = [];
+      var tagsNew = _.keyBy(tags, function (tag) {
+        return toKey(tag);
+      });
       var tagsOld = o.tags || [];
-      var fieldNames = Object.keys(fields);
-      var numUpdatedFields = fieldNames.length;
       tagsOld.forEach(function (tag) {
-        var name = tag.name;
-        var i;
-        var field;
-        for (i = 0; i < numUpdatedFields; i++) {
-          field = fieldNames[i];
-          if (name.indexOf(field + ':locations:') !== 0) {
-            continue;
-          }
-          pull.push(name);
-          break;
+        if (!tag.server) {
+          return;
         }
+        if (!tagsNew[toKey(tag)]) {
+          return;
+        }
+        pull.push(tag);
       });
       model.update({_id: data.id}, {
         $pull: {
-          tags: {
-            name: {
-              $in: pull
-            }
-          }
+          tags: pull
         }
       }, function (err) {
         if (err) {
@@ -113,7 +108,7 @@ var locationUpdated = function (data, done) {
         log.error('model:not-found', 'model:%s', data.model);
         return eachDone();
       }
-      var fields = findFields(model);
+      var fields = findLocationFields(model);
       var or = [];
       fields.forEach(function (field) {
         var q = {};
@@ -167,7 +162,7 @@ var locationUpdated = function (data, done) {
 };
 
 var modelUpdated = function (model, data, done) {
-  var fields = findFields(model);
+  var fields = findLocationFields(model);
   var updated = data.updated;
   var o = [];
   fields.forEach(function (field) {

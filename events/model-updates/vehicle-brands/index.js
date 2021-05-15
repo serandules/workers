@@ -1,15 +1,16 @@
-var log = require('logger')('events:model-update:vehicle-makes');
+var log = require('logger')('events:model-updates:vehicle-brands');
 
 var sera = require('sera');
 var utils = sera.utils;
-var vehicleUtils = require('vehicle-utils');
+var modelUtils = require('model-utils');
+var brandUtils = modelUtils.brands;
 
 exports.timeout = 60000;
 
 exports.handle = function (ctx, done) {
   var data = ctx.data;
   var model = data.model;
-  if (['vehicle-makes', 'vehicle-models'].indexOf(model) === -1) {
+  if (['brands', 'models'].indexOf(model) === -1) {
     return done();
   }
   var action = data.action;
@@ -19,9 +20,9 @@ exports.handle = function (ctx, done) {
   if (['create', 'update', 'remove'].indexOf(action) === -1) {
     return done();
   }
-  vehicleUtils.allMakes(function (err, makes) {
-    sera.model('configs').findOneAndUpdate({name: 'vehicle-makes'}, {
-      value: JSON.stringify(makes)
+  brandUtils.find('vehicles', function (err, brands) {
+    sera.model('configs').findOneAndUpdate({name: 'brands-vehicles'}, {
+      value: JSON.stringify(brands)
     }, {new: true}, function (err, config) {
       if (err) {
         return done(err);

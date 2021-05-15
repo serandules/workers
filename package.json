@@ -15,7 +15,7 @@
     "shelljs": "0.7.7",
     "logger": "serandules/logger#master",
     "model-configs": "serandules/model-configs#master",
-    "vehicle-utils": "serandules/vehicle-utils#master",
+    "model-utils": "serandules/model-utils#master",
     "sera": "serandules/sera#master",
     "serandives": "serandules/serandives#master"
   },
