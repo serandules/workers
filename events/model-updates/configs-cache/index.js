@@ -13,7 +13,7 @@ exports.handle = function (ctx, done) {
   }
   var action = data.action;
   if (action === 'remove') {
-    return sera.cache('configs:' + data.name, null, done);
+    return utils.cache('configs:' + data.name, null, done);
   }
   if (action !== 'create' && action !== 'update') {
     return done();
@@ -25,7 +25,7 @@ exports.handle = function (ctx, done) {
     if (!config) {
       return done();
     }
-    config = sera.json(config);
+    config = utils.json(config);
     utils.group('public', function (err, pub) {
       if (err) {
         return done(err);
@@ -34,7 +34,7 @@ exports.handle = function (ctx, done) {
         if (err) {
           return done(err);
         }
-        var permitted = sera.permitted({groups: [pub.id, anon.id]}, config, 'read');
+        var permitted = utils.permitted({groups: [pub.id, anon.id]}, config, 'read');
         if (!permitted) {
           return done();
         }
